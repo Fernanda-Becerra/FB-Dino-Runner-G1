@@ -1,11 +1,12 @@
 import pygame
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import JUMPING, RUNNING
+from dino_runner.utils.constants import JUMPING, RUNNING, DUCKING
 
 
 DINO_RUNNING = "running"
 DINO_JUMPING = "jumping"
+DINO_DUCKING = "ducking"
 
 
 class Dinosaur(Sprite):
@@ -26,15 +27,19 @@ class Dinosaur(Sprite):
       if self.action == DINO_RUNNING:
          self.run()
       elif self.action == DINO_JUMPING:
-         self.jump()   
-        
+         self.jump()
+      elif self.action == DINO_DUCKING:
+         self.duck()
+      
       if self.action != DINO_JUMPING:
         if user_input[pygame.K_UP]:
           self.action = DINO_JUMPING
+        elif user_input[pygame.K_DOWN]: # Aqui el dinosaurio le ordenamos que se agache
+          self.action = DINO_DUCKING
+          print(DINO_DUCKING)
         else:
            self.action = DINO_RUNNING
 
-    
         if self.step >= 10:
             self.step = 0
 
@@ -49,12 +54,19 @@ class Dinosaur(Sprite):
            self.action = DINO_RUNNING
            self.rect.y = self.POSITION_Y
 
+    def duck(self):
+      self.image = DUCKING[self.step // 5] 
+      self.rect = self.image.get_rect()
+      self.rect.x = self.POSITION_X
+      self.rect.y = self.POSITION_Y + 40
+      self.step += 1
+
     def run(self):
-        self.image = RUNNING[self.step // 5] 
-        self.rect = self.image.get_rect()
-        self.rect.x = self.POSITION_X
-        self.rect.y = self.POSITION_Y
-        self.step += 1
+      self.image = RUNNING[self.step // 5] 
+      self.rect = self.image.get_rect()
+      self.rect.x = self.POSITION_X
+      self.rect.y = self.POSITION_Y
+      self.step += 1
     
     def draw(self, screen):
         screen.blit(self.image,(self.rect.x, self.rect.y))
