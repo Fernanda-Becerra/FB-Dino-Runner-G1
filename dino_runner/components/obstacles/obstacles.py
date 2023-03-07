@@ -1,4 +1,5 @@
 from pygame import Surface
+import pygame
 from pygame.sprite import Sprite
 
 from dino_runner.utils.constants import SCREEN_WIDTH
@@ -16,4 +17,4 @@ class Obstacle(Sprite):
             obstacles.remove(self)
     
     def draw(self, screen):
-        screen.blit(self.image,(self.rec.x, self.rec.y))
+        screen.blit(self.image, (self.rect.x, self.rect.y))
