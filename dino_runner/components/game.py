@@ -5,6 +5,7 @@ from dino_runner.components.obstacles.obstacles_manager import ObstacleManager
 from dino_runner.components.score import Score
 
 from dino_runner.utils.constants import BG, DINO_START, FONT_STYLE, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS
+from dino_runner.utils.writer import Writer
 
 
 class Game:
@@ -23,7 +24,11 @@ class Game:
         self.player = Dinosaur()
         self.obstacle_manager= ObstacleManager()
         self.score = Score()
+        self.writer = Writer()
         self.death_count = 0
+        # contador de muertes almacenado
+        # Aqui guardo el valor de contador de muertes para mostrar
+        self.death_count_stored = 0
 
     def run(self):
         self.excecuting = True
@@ -75,6 +80,8 @@ class Game:
     def on_death(self):
         self.playing = False
         self.death_count =+ 1
+        # Aqui voy actualizando el contador de muertes para mostrar
+        self.death_count_stored += 1
 
     def show_menu(self):
          self.screen.fill((255, 255, 255))
@@ -83,26 +90,39 @@ class Game:
          half_screen_height = SCREEN_HEIGHT // 2
 
          if not self.death_count:
-
-            font = pygame.font.Font(FONT_STYLE, 32)
-            text = font.render("Welcome, press any key to start...!", False, (0, 0, 0))
-            text_rect = text.get_rect()
-            text_rect.center = (half_screen_width, half_screen_height)
+            text, text_rect = self.writer.print("Welcome, press any key to start...!", FONT_STYLE, 32, half_screen_width,half_screen_height)
             self.screen.blit(text, text_rect)
         
          else:
-            pass
-    
+            print("entra o no")
+            message_title = "You Loose!, press any key to continue...!"
+            message_score = f"Score = {self.score.score}"
+            message_death = f"Death Count = {self.death_count_stored}"
+            font_size = 32
+
+            result_title = self.writer.print(message_title, FONT_STYLE, font_size, half_screen_width, half_screen_height)
+            self.screen.blit(result_title[0], result_title[1])
+
+            result_score= self.writer.print(message_score, FONT_STYLE, font_size, half_screen_width, half_screen_height + 50)
+            self.screen.blit(result_score[0], result_score[1])
+
+            result_death= self.writer.print(message_death, FONT_STYLE, font_size, half_screen_width, half_screen_height + 100)
+            self.screen.blit(result_death[0], result_death[1])
+
+
          self.screen.blit(DINO_START,(half_screen_width - 40, half_screen_height -140))
          pygame.display.flip()
 
          self.handle_menu_events()
 
     def handle_menu_events(self):
+        # print("ENTRO AL FUCKING handle_menu_events function")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.playing =False
+                print("ENTRO  AL QUIT JODER!!")
+                self.playing = False
                 self.executing = False
+                pygame.quit()
             
             if event.type == pygame.KEYDOWN:
                 self.start_game()
