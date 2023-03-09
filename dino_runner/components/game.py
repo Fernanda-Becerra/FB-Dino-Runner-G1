@@ -92,6 +92,7 @@ class Game:
             self.playing = False
             self.death_count =+ 1
             self.death_count_stored += 1 # Aqui voy actualizando el contador de muertes para mostrar
+    
     def on_reset_power(self):
         if self.hammer.rect.x >= 1100:
             self.player.hammer_power = False
