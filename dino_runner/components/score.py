@@ -16,3 +16,6 @@ class Score:
     def draw(self, screen):
         text, text_rect = self.writer.print(f"Score: {self.score}",FONT_STYLE, 24, 950,30)
         screen.blit(text, text_rect)
+     
+    def reset(self):
+        self.score = 0
