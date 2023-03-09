@@ -1,10 +1,10 @@
 import pygame
 from dino_runner.components.dinosaurio import Dinosaur
-from dino_runner.components.obstacles.cactus import Cactus
 from dino_runner.components.obstacles.obstacles_manager import ObstacleManager
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 from dino_runner.components.score import Score
 
-from dino_runner.utils.constants import BG, DINO_START, FONT_STYLE, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS
+from dino_runner.utils.constants import BG, DINO_START, FONT_STYLE, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD_TYPE, TITLE, FPS
 from dino_runner.utils.writer import Writer
 
 
@@ -29,6 +29,7 @@ class Game:
         # contador de muertes almacenado
         # Aqui guardo el valor de contador de muertes para mostrar
         self.death_count_stored = 0
+        self.power_up_manager = PowerUpManager()
 
     def run(self):
         self.excecuting = True
@@ -41,6 +42,7 @@ class Game:
         # Game loop: events - update - draw
         self.playing = True
         self.obstacle_manager.reset()
+        self.power_up_manager.reset()
         while self.playing:
             self.events()
             self.update()
@@ -57,6 +59,8 @@ class Game:
         self.player.update(user_input)
         self.obstacle_manager.update(self.game_speed, self.player, self.on_death)
         self.score.update(self)
+        self.power_up_manager.update(self.game_speed, self.score.score, self.player)
+        self.player.check_power_up(self.screen)
 
     def draw(self):
         self.clock.tick(FPS)
@@ -65,6 +69,8 @@ class Game:
         self.player.draw(self.screen)     
         self.obstacle_manager.draw(self.screen)
         self.score.draw(self.screen)
+        self.power_up_manager.draw(self.screen)
+        self.player.check_power_up(self.screen)
         pygame.display.update()
         pygame.display.flip()
         
@@ -78,10 +84,12 @@ class Game:
         self.x_pos_bg -= self.game_speed
    
     def on_death(self):
-        self.playing = False
-        self.death_count =+ 1
+        is_invincible = self.player.type == SHIELD_TYPE
+        if not is_invincible:
+            self.playing = False
+            self.death_count =+ 1
         # Aqui voy actualizando el contador de muertes para mostrar
-        self.death_count_stored += 1
+            self.death_count_stored += 1
 
     def show_menu(self):
          self.screen.fill((255, 255, 255))
@@ -126,3 +134,4 @@ class Game:
             
             if event.type == pygame.KEYDOWN:
                 self.start_game()
+    

@@ -1,13 +1,17 @@
 import pygame
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import JUMPING, RUNNING, DUCKING
+from dino_runner.utils.constants import DEFAULT_TYPE, DUCKING_SHIELD, FONT_STYLE, JUMPING, JUMPING_SHIELD, RUNNING, DUCKING, RUNNING_SHIELD, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD_TYPE
+from dino_runner.utils.writer import Writer
 
 
 DINO_RUNNING = "running"
 DINO_JUMPING = "jumping"
 DINO_DUCKING = "ducking"
 
+DUCK_IMG = {DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD} 
+JUMP_IMG = {DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD} 
+RUN_IMG = {DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD} 
 
 class Dinosaur(Sprite):
     POSITION_X = 80
@@ -16,10 +20,15 @@ class Dinosaur(Sprite):
     POSITION_DUCK = 340
     
     def __init__(self):
-        self.update_image(RUNNING[0])
+        self.type = DEFAULT_TYPE
+
+        #en q momento deberia acabar el power up
+        self.power_up_time_up = 0
+        self.update_image(RUN_IMG[self.type][0])
         self.action = DINO_RUNNING
         self.jump_velocity = self.JUMP_VELOCITY
         self.step = 0
+        self.writer = Writer()
    
     def update(self, user_input):
       if self.action == DINO_RUNNING:
@@ -43,7 +52,7 @@ class Dinosaur(Sprite):
 
     def jump(self):
         pos_y = self.rect.y - self.jump_velocity * 4
-        self.update_image(JUMPING, pos_y=pos_y)
+        self.update_image(JUMP_IMG[self.type], pos_y=pos_y)
         self.jump_velocity -= 0.8
         print("velocidad", self.jump_velocity)
         print("y", self.rect.y)
@@ -59,12 +68,27 @@ class Dinosaur(Sprite):
       self.rect.y = pos_y or self.POSITION_Y
        
     def duck(self):
-      self.update_image(DUCKING[self.step // 5], pos_y=self.POSITION_DUCK) 
+      self.update_image(DUCK_IMG[self.type][self.step // 5], pos_y=self.POSITION_DUCK) 
       self.step += 1
 
     def run(self):
-      self.update_image(RUNNING[self.step // 5]) 
+      self.update_image(RUN_IMG[self.type][self.step // 5]) 
       self.step += 1
     
     def draw(self, screen):
         screen.blit(self.image,(self.rect.x, self.rect.y))
+
+    def on_pick_power_up(self,power_up):
+       self.type = power_up.type
+       self.power_up_time_up = power_up.start_time + (power_up.duration *1000)
+
+    def check_power_up(self, screen):
+       if self.type == SHIELD_TYPE:
+          time_to_show = round((self.power_up_time_up - pygame.time.get_ticks()) / 1000, 2)
+          if time_to_show >= 0: 
+            print("ENTRO")
+            text, text_rect = self.writer.print(f"{self.type.capitalize()} enabled for {time_to_show} seconds.", FONT_STYLE, 16, SCREEN_WIDTH // 2, (SCREEN_HEIGHT // 2) - 250)
+            screen.blit(text, text_rect)
+          else:
+             self.type = DEFAULT_TYPE
+             self.power_up_time_up = 0
